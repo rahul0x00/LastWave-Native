@@ -46,6 +46,23 @@ jobs:
           name: unit-test-reports
           path: app/build/reports/tests/testDebugUnitTest
 
+      - name: Ensure fallback debug keystore exists
+        run: |
+          KEYSTORE_PATH="$HOME/.config/.android/debug.keystore"
+          if [ ! -f "$KEYSTORE_PATH" ]; then
+            mkdir -p "$(dirname "$KEYSTORE_PATH")"
+            keytool -genkeypair -v -storetype PKCS12 \
+              -keystore "$KEYSTORE_PATH" \
+              -storepass android \
+              -alias androiddebugkey \
+              -keypass android \
+              -dname "CN=Android Debug,O=Android,C=US" \
+              -keyalg RSA \
+              -keysize 2048 \
+              -validity 10000 \
+              -noprompt
+          fi
+
       - name: Build Android 10 Release APKs (compressed + raw)
         env:
           PROVIDER_MODULE_KEY: ${{ secrets.PROVIDER_MODULE_KEY }}
